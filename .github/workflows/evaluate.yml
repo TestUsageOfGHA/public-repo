@@ -84,7 +84,11 @@ jobs:
             https://api.github.com/installation/repositories | jq '.repositories[].full_name'
 
       - name: Login to GHCR
-        run: echo "${{ steps.app-token.outputs.token }}" | docker login ghcr.io -u x --password-stdin
+        run: |
+          echo "${{ steps.app-token.outputs.token }}" | \
+          docker login ghcr.io \
+            -u x-access-token \
+            --password-stdin
 
       - name: Run evaluation
         run: |
