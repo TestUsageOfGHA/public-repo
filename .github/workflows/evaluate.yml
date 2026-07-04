@@ -75,7 +75,7 @@ jobs:
         with:
           app-id: ${{ secrets.PLATFORM_APP_ID }}
           private-key: ${{ secrets.PLATFORM_APP_PRIVATE_KEY }}
-          owner: your-org
+          owner: testusageofgha
           repositories: platform-runner-image
 
       - name: Login to GHCR
@@ -87,7 +87,7 @@ jobs:
       # GitHub automatically mounts the checked-out submission into the
       # container at /github/workspace.
       - name: Run evaluation
-        uses: docker://ghcr.io/your-org/platform-runner:1.0.0
+        uses: docker://ghcr.io/testusageofgha/platform-runner:1.0.0
         env:
           DB_HOST: postgres
           DB_PORT: 5432
