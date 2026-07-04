@@ -1,0 +1,23 @@
+target/
+*.class
+*.log
+.idea/
+*.iml
+
+# ---------------------------------------------------------------------------
+# NOTE ON THIS SECTION:
+# .gitignore only affects UNTRACKED files - it cannot stop someone from
+# editing evaluate.yml itself (already tracked) or force-adding a new file
+# with `git add -f`. It is NOT a security control. It just means an editor
+# won't casually suggest committing a stray workflow/action file, and `git
+# status` won't show one as "new file" by accident. Real enforcement is:
+#   1. pull_request_target (workflow edits in the PR are ignored at run time)
+#   2. the guard-protected-paths job in evaluate.yml (fails the PR check)
+#   3. CODEOWNERS + "require review from Code Owners" branch protection
+#   4. "Require status checks to pass" branch protection (guard job + evaluate)
+# ---------------------------------------------------------------------------
+/.github/workflows/*
+!/.github/workflows/evaluate.yml
+/.github/actions/
+Dockerfile
+docker-compose*.yml

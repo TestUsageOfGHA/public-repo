@@ -1,0 +1,95 @@
+name: Evaluate Submission
+
+# pull_request_target is deliberate: GitHub always loads the workflow
+# definition from the BASE branch for this event type, so a PR that edits
+# this file has its edits ignored for the run that evaluates it. Combined
+# with the guard job below (which fails the run if protected paths were
+# touched) and required status checks / CODEOWNERS review on the repo
+# settings side, this is what actually enforces "the action can't be
+# changed by a submission."
+on:
+  pull_request_target:
+    types: [opened, synchronize, reopened]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+concurrency:
+  group: evaluate-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  guard-protected-paths:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout PR head (diff only, no execution)
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+
+      - name: Fetch base branch for comparison
+        run: git fetch origin ${{ github.event.pull_request.base.ref }} --depth=200
+
+      - name: Reject PRs that touch protected platform files
+        run: |
+          CHANGED=$(git diff --name-only "origin/${{ github.event.pull_request.base.ref }}...HEAD")
+          echo "Changed files in this PR:"
+          echo "$CHANGED"
+          if echo "$CHANGED" | grep -E '^\.github/|(^|/)Dockerfile|docker-compose|action\.ya?ml'; then
+            echo "::error::This PR modifies protected platform files (.github/, Dockerfile, docker-compose*, action.yml). Submissions may only touch src/**. Please revert those changes."
+            exit 1
+          fi
+          echo "No protected paths touched. Continuing."
+
+  evaluate:
+    needs: guard-protected-paths
+    runs-on: ubuntu-latest
+
+    # Redis/DB for the app under test - defined here (visible in the public
+    # log/workflow), but this only reveals "we use postgres + redis", not
+    # any of the actual business logic or test assertions.
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_PASSWORD: practice
+          POSTGRES_DB: practice
+        ports:
+          - 5432:5432
+      redis:
+        image: redis:7
+        ports:
+          - 6379:6379
+
+    steps:
+      - name: Checkout submission (PR head)
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+
+      - name: Generate short-lived, read-only registry token
+        id: app-token
+        uses: actions/create-github-app-token@v1
+        with:
+          app-id: ${{ secrets.PLATFORM_APP_ID }}
+          private-key: ${{ secrets.PLATFORM_APP_PRIVATE_KEY }}
+          owner: your-org
+          repositories: platform-runner-image
+
+      - name: Login to GHCR
+        run: echo "${{ steps.app-token.outputs.token }}" | docker login ghcr.io -u x --password-stdin
+
+      # This is the whole "call the private action" step. Because it's a
+      # Docker container action (not composite), the log shows exactly one
+      # line here - no internal steps, no commands, no test source.
+      # GitHub automatically mounts the checked-out submission into the
+      # container at /github/workspace.
+      - name: Run evaluation
+        uses: docker://ghcr.io/your-org/platform-runner:1.0.0
+        env:
+          DB_HOST: postgres
+          DB_PORT: 5432
+          REDIS_HOST: redis
+          REDIS_PORT: 6379

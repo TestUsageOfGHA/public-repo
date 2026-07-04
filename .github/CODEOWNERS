@@ -1,0 +1,5 @@
+# Any change under .github/ (workflows, actions, CODEOWNERS itself) requires
+# review/approval from the platform team, regardless of who opens the PR.
+# This only takes effect once "Require review from Code Owners" is enabled
+# in branch protection settings for the default branch.
+/.github/            @your-org/platform-admins
