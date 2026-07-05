@@ -92,11 +92,11 @@ jobs:
 
       - name: Run evaluation
         run: |
-          docker pull ghcr.io/testusageofgha/platform-runner:1.0.0
+          docker pull ghcr.io/testusageofgha/platform-runner-1:1.0.0
           docker run --rm \
             --network ${{ job.container.network }} \
             -v "${{ github.workspace }}:/github/workspace" \
             -e GITHUB_WORKSPACE=/github/workspace \
             -e DB_HOST=postgres -e DB_PORT=5432 \
             -e REDIS_HOST=redis -e REDIS_PORT=6379 \
-            ghcr.io/testusageofgha/platform-runner:1.0.0
+            ghcr.io/testusageofgha/platform-runner-1:1.0.0
