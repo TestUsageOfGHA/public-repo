@@ -24,7 +24,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout PR head (diff only, no execution)
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           ref: ${{ github.event.pull_request.head.sha }}
           fetch-depth: 0
@@ -54,8 +54,7 @@ jobs:
       postgres:
         image: postgres:16
         env:
-          POSTGRES_PASSWORD: practice
-          POSTGRES_DB: practice
+          POSTGRES_PASSWORD: postgres
         ports:
           - 5432:5432
       redis:
