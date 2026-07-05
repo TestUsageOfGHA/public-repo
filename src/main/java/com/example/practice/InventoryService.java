@@ -88,6 +88,7 @@ public class InventoryService {
 
     private Connection openConnection() throws SQLException {
         return DriverManager.getConnection(jdbcUrl, dbUser, dbPassword);
+
     }
 
     private static String cacheKey(String sku) {
