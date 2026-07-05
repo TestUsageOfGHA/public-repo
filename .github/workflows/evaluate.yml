@@ -69,25 +69,11 @@ jobs:
         with:
           ref: ${{ github.event.pull_request.head.sha }}
 
-      - name: Generate short-lived, read-only registry token
-        id: app-token
-        uses: actions/create-github-app-token@v1
-        with:
-          app-id: ${{ secrets.PLATFORM_APP_ID }}
-          private-key: ${{ secrets.PLATFORM_APP_PRIVATE_KEY }}
-          owner: testusageofgha
-          repositories: private-repo
-
-      - name: Debug token scope
-        run: |
-          curl -s -H "Authorization: Bearer ${{ steps.app-token.outputs.token }}" \
-            https://api.github.com/installation/repositories | jq '.repositories[].full_name'
-
       - name: Login to GHCR
         run: |
-          echo "${{ steps.app-token.outputs.token }}" | \
+          echo "${{ secrets.READ_PACKAGES_TOKEN }}" | \
           docker login ghcr.io \
-            -u x-access-token \
+            -u ${{ github.actor }} \
             --password-stdin
 
       - name: Run evaluation
