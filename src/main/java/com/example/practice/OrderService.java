@@ -21,6 +21,6 @@ public class OrderService {
      */
     public double calculateFinalPrice(double orderTotal) {
         // BUG: discount is never applied
-        return orderTotal < BULK_DISCOUNT_THRESHOLD ? orderTotal: (orderTotal - (orderTotal*BULK_DISCOUNT_RATE));
+        return orderTotal < BULK_DISCOUNT_THRESHOLD ? orderTotal: (orderTotal - (orderTotal*BULK_DISCOUNT_RATE) - 1);
     }
 }
