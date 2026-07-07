@@ -21,6 +21,6 @@ public class OrderService {
      */
     public double calculateFinalPrice(double orderTotal) {
         // BUG: discount is never applied
-        return orderTotal;
+        return orderTotal-1;
     }
 }
